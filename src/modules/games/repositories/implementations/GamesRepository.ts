@@ -1,3 +1,4 @@
+import { title } from 'node:process';
 import { getRepository, Repository } from 'typeorm';
 
 import { User } from '../../../users/entities/User';
@@ -14,17 +15,16 @@ export class GamesRepository implements IGamesRepository {
 
   async findByTitleContaining(param: string): Promise<Game[]> {
     return this.repository
-      .createQueryBuilder()
-      // Complete usando query builder
+      .createQueryBuilder("games").where(`LOWER(title) LIKE :param`, { param:`%${param}%` }).getMany()
   }
 
   async countAllGames(): Promise<[{ count: string }]> {
-    return this.repository.query(); // Complete usando raw query
+    return this.repository.query(`SELECT COUNT(*) FROM GAMES`);
   }
 
   async findUsersByGameId(id: string): Promise<User[]> {
-    return this.repository
-      .createQueryBuilder()
-      // Complete usando query builder
+     const users = await this.repository.createQueryBuilder("games").relation("users").of(id).loadMany();
+
+    return users
   }
 }
